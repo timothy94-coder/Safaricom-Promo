@@ -30,10 +30,10 @@ export default function Home() {
   ];
 
   const bliveBundles = [
-    { title: "24 Hours Bundle", price: 140 },
-    { title: "3 Days Bundle", price: 350 },
-    { title: "1 Week Bundle", price: 480 },
-    { title: "1 Month Bundle", price: 1300 },
+    { title: "24 Hours Bundle, unlimited", price: 140 },
+    { title: "3 Days Bundle, unlimited", price: 350 },
+    { title: "1 Week Bundle, unlimited", price: 480 },
+    { title: "1 Month Bundle, unlimited", price: 1300 },
   ];
 
   const specialOffers = [
