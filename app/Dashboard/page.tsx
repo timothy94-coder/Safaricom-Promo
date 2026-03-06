@@ -104,7 +104,7 @@ export default function FulizaBoost() {
   };
 
   return (
-<div className="min-h-screen bg-[#f4faf6]">
+<div className="min-h-screen bg-[#f4faf6] flex justify-center">
       <div className="w-full max-w-md pb-16">
 
         {/* HEADER */}
