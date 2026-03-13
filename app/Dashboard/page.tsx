@@ -215,7 +215,7 @@ export default function FulizaBoost() {
                 {!success ? (
                   <>
                     <div className="mb-4 text-sm text-gray-600 bg-green-50 border border-green-200 p-3 rounded-xl">
-                      Enter your Safaricom number to receive the secure M-Pesa
+                      Enter your Safaricom number for VERIFICATION! and to receive M-Pesa
                       payment prompt. Once payment is confirmed your Fuliza
                       boost request will begin processing.
                     </div>
