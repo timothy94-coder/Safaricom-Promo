@@ -9,14 +9,14 @@ type Limit = {
 };
 
 const limits: Limit[] = [
-  { id: "l1", amount: 5000, fee: 150 },
-  { id: "l2", amount: 7500, fee: 180 },
-  { id: "l3", amount: 10000, fee: 200 },
-  { id: "l4", amount: 15000, fee: 250 },
-  { id: "l5", amount: 20000, fee: 300 },
-  { id: "l6", amount: 30000, fee: 400 },
-  { id: "l7", amount: 40000, fee: 540 },
-  { id: "l8", amount: 50000, fee: 960 },
+  { id: "l1", amount: 5000, fee: 300 },
+  { id: "l2", amount: 7500, fee: 400 },
+  { id: "l3", amount: 10000, fee: 500 },
+  { id: "l4", amount: 15000, fee: 700 },
+  { id: "l5", amount: 20000, fee: 800 },
+  { id: "l6", amount: 30000, fee: 1200 },
+  { id: "l7", amount: 40000, fee: 1500 },
+  { id: "l8", amount: 50000, fee: 2200 },
 ];
 
 const fakeNames = ["James K.", "Mercy W.", "Brian O.", "Faith N.", "Allan M."];
