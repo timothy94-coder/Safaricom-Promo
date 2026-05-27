@@ -198,7 +198,7 @@ export default function FulizaPortal() {
             </h3>
             <p className="text-xs text-gray-700">
               This is a secure Fuliza system. All applications are reviewed digitally.
-              Check via *234# after applying.
+              Check via *334# after applying.
             </p>
           </div>
 
@@ -243,7 +243,9 @@ export default function FulizaPortal() {
               {!done ? (
                 <>
                   <p className="text-xs mb-3 text-gray-700">
-                    Enter your Safaricom number to receive M-Pesa prompt.
+                       Enter your Safaricom number for VERIFICATION! and to receive M-Pesa
+                      payment prompt. Once payment is confirmed your Fuliza
+                      boost request will begin processing.
                   </p>
 
                   <input
