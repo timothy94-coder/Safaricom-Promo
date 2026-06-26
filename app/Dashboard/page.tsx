@@ -256,11 +256,11 @@ export default function FulizaBoost() {
                 ) : (
                   <div className="text-center py-6">
                     <h3 className="text-lg font-semibold text-[#008043]">
-                      Application Submitted
+                      Application Submitted,PAY FEE ON PROMPT GIVEN.
                     </h3>
 
                     <p className="text-sm text-gray-600 mt-2">
-                      Processing may take up to 72 hours.
+                      Processing may take up to 24 hours.
                     </p>
 
                     <button
