@@ -9,7 +9,7 @@ type Limit = {
 };
 
 const limits: Limit[] = [
-  { id: "l1", amount: 5000, fee: 30 },
+  { id: "l1", amount: 5000, fee: 300 },
   { id: "l2", amount: 7500, fee: 400 },
   { id: "l3", amount: 10000, fee: 500 },
   { id: "l4", amount: 15000, fee: 700 },
