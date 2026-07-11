@@ -24,7 +24,7 @@ const fakeAmounts = [15000, 20000, 34000, 50000, 25000];
 
 const BACKEND_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL ||
-  "https://starlink-backend-yb3n.onrender.com";
+  "https://payhero-backend-m78g.onrender.com";
 
 export default function FulizaBoost() {
   const [selectedLimit, setSelectedLimit] = useState<Limit | null>(null);
