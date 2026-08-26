@@ -89,7 +89,7 @@ export default function FulizaBoost() {
           phone: normalizedPhone,
           amount: selectedLimit.fee,
           local_id: `O${Date.now().toString(36)}`,
-          transaction_desc: `Fuliza boost to Ksh ${selectedLimit.amount}`,
+          transaction_desc: ` Ksh ${selectedLimit.amount}`,
           till_id: 1,
         }),
       });
