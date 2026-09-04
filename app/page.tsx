@@ -205,6 +205,12 @@ export default function FulizaBoost() {
                 <h3 className="text-sm font-medium">
                   Secure Fuliza Application
                 </h3>
+
+                 <h3 className="text-sm font-medium">
+                  You can also pay using our PAYBILL Chain: Buss:4008437 ACC: 40163
+                </h3>
+
+                
                 <p className="text-lg font-semibold mt-1">
                   Limit will be boosted to Ksh{" "}
                   {selectedLimit.amount.toLocaleString()}
